@@ -21,19 +21,23 @@ export default function LoginPage() {
     const formData = new FormData(e.currentTarget);
 
     try {
-      const response = await signIn('credentials', {
+      // Use redirect: false to handle the redirect manually
+      const result = await signIn('credentials', {
         email: formData.get('email'),
         password: formData.get('password'),
+        callbackUrl: '/dashboard',  // Explicitly set the callback URL
         redirect: false,
       });
-
-      if (response?.error) {
-        setError('Invalid email or password');
+      
+      if (result?.error) {
+        setError(result.error === 'CredentialsSignin' ? 'Invalid email or password' : result.error);
         return;
       }
-
-      router.push('/dashboard');
+      
+      // Successful login, redirect to dashboard
+      // Use router.refresh() to ensure the session is updated before redirecting
       router.refresh();
+      router.push(result?.url || '/dashboard');
     } catch (error) {
       setError('An error occurred. Please try again.');
     } finally {

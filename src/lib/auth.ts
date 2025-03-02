@@ -42,6 +42,7 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
+  secret: process.env.NEXTAUTH_SECRET,
   pages: {
     signIn: "/login",
     signOut: "/",
@@ -121,6 +122,22 @@ export const authOptions: NextAuthOptions = {
         role: dbUser.role,
         picture: dbUser.image,
       };
+    },
+    async redirect({ url, baseUrl }) {
+      // Always redirect to dashboard after sign in
+      if (url.includes("/api/auth/signin") || url === "/login") {
+        return `${baseUrl}/dashboard`;
+      }
+      
+      // Allows relative callback URLs
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) {
+        return url;
+      }
+      return baseUrl;
     },
   },
 };
